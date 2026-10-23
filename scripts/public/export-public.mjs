@@ -47,11 +47,22 @@ function href(path){return origin+path;}
 function pathUrl(path){return basePath+path;}
 function shell(title,body,description='技术文章与工程实践笔记'){
   const desc=esc(description).slice(0,600);
-  return `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)} · Home Blog</title><meta name="description" content="${desc}"><meta property="og:type" content="${currentPath.startsWith('/articles/')?'article':'website'}"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${desc}"><meta property="og:url" content="${esc(href(currentPath))}"><meta property="og:locale" content="zh_CN"><meta name="twitter:card" content="summary"><meta name="robots" content="${currentPath==='/search/'?'noindex,follow':'index,follow'}"><link rel="canonical" href="${esc(href(currentPath))}"><link rel="stylesheet" href="${pathUrl('/assets/site.css')}"><link rel="alternate" type="application/rss+xml" href="${pathUrl('/feed.xml')}" title="Home Blog"></head><body><header><nav><a class="brand" href="${pathUrl('/')}">Home Blog</a><a href="${pathUrl('/articles/')}">文章</a><a href="${pathUrl('/tags/')}">标签</a><a href="${pathUrl('/projects/')}">项目</a><a href="${pathUrl('/about/')}">关于</a><a href="${pathUrl('/search/')}">搜索</a></nav></header><main>${body}</main><footer><p>1998x Stack · 公共只读镜像 · <a href="https://github.com/1998x-stack/home-blog" rel="noopener noreferrer">GitHub</a></p></footer></body></html>`;
+  const nav=[['/articles/','文章'],['/tags/','主题'],['/projects/','项目'],['/about/','关于']];
+  const links=nav.map(([path,label])=>'<a href="'+pathUrl(path)+'">'+label+'</a>').join('');
+  return '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f8f7f2"><title>'+esc(title)+' · 1998x Journal</title><meta name="description" content="'+desc+'"><meta property="og:type" content="'+(currentPath.startsWith('/articles/')?'article':'website')+'"><meta property="og:title" content="'+esc(title)+'"><meta property="og:description" content="'+desc+'"><meta property="og:url" content="'+esc(href(currentPath))+'"><meta property="og:locale" content="zh_CN"><meta name="twitter:card" content="summary"><meta name="robots" content="'+(currentPath==='/search/'?'noindex,follow':'index,follow')+'"><link rel="canonical" href="'+esc(href(currentPath))+'"><link rel="stylesheet" href="'+pathUrl('/assets/site.css')+'"><link rel="alternate" type="application/rss+xml" href="'+pathUrl('/feed.xml')+'" title="1998x Journal"></head><body><a class="skip-link" href="#content">跳转到主要内容</a><header class="site-header"><nav class="pub-nav"><a class="brand" href="'+pathUrl('/')+'"><span class="brand-flower" aria-hidden="true">✳</span>1998x <i>journal</i></a><div class="nav-links">'+links+'</div><div class="nav-actions"><a href="'+pathUrl('/search/')+'" aria-label="搜索文章">⌕ <span>搜索</span></a><button type="button" id="theme-toggle" aria-label="切换深浅色模式">☾</button></div></nav></header><main id="content">'+body+'</main><footer class="site-footer"><div class="footer-intro"><p class="eyebrow">AN OPEN NOTEBOOK</p><h2>愿每次阅读，都带来一点新的好奇。</h2><a class="text-link" href="'+pathUrl('/articles/')+'">继续探索 ↗</a></div><div class="river" aria-hidden="true"><svg viewBox="0 0 1200 66" preserveAspectRatio="none"><path d="M0 34Q90 8 180 34T360 34T540 34T720 34T900 34T1080 34T1260 34"/><path d="M0 47Q90 21 180 47T360 47T540 47T720 47T900 47T1080 47T1260 47"/></svg></div><div class="footer-bottom"><div><strong>1998x · JOURNAL</strong><p>慢慢思考，认真写作，持续构建。</p></div><div class="footer-links"><a href="'+pathUrl('/feed.xml')+'">RSS</a><a href="'+pathUrl('/sitemap.xml')+'">Sitemap</a><a href="https://github.com/1998x-stack/home-blog" rel="noopener noreferrer">GitHub ↗</a></div></div></footer><script src="'+pathUrl('/assets/theme.js')+'" defer></script></body></html>';
 }
 let currentPath='/';
-function page(path,title,body,description){currentPath=path;output(path==='/'?'index.html':`${path.slice(1)}index.html`,shell(title,body,description));}
-function card(p){return `<article class="card"><time>${esc(p.date)}</time><h2><a href="${pathUrl(`/articles/${esc(p.slug)}/`)}">${esc(p.title)}</a></h2><p>${esc(p.summary)}</p><div class="tags">${p.tags.map(t=>`<a href="${pathUrl(`/tags/${t}/`)}">${esc(tagsMap[t])}</a>`).join('')}</div></article>`;}
+function page(path,title,body,description){currentPath=path;output(path==='/'?'index.html':path.slice(1)+'index.html',shell(title,body,description));}
+function card(p,index){
+  const tags=p.tags.map(t=>'<a href="'+pathUrl('/tags/'+t+'/')+'">'+esc(tagsMap[t])+'</a>').join('');
+  return '<article class="card"><span class="card-index">'+String(index??1).padStart(2,'0')+'</span><div><p class="meta">'+esc(p.date)+' · 一篇技术笔记</p><h2><a href="'+pathUrl('/articles/'+p.slug+'/')+'">'+esc(p.title)+' <span aria-hidden="true">↗</span></a></h2><p>'+esc(p.summary)+'</p><div class="tags">'+tags+'</div></div></article>';
+}
+function tableOfContents(body){
+  const entries=Array.from(body.matchAll(/<h([23]) id="([^"]+)">([\s\S]*?)<\/h[23]>/g))
+    .map(m=>({depth:Number(m[1]),id:m[2],label:m[3].replace(/<[^>]*>/g,'')}));
+  if(entries.length<2)return '';
+  return '<aside class="post-toc"><span class="eyebrow">ON THIS PAGE</span><nav aria-label="文章目录">'+entries.map(h=>'<a class="'+(h.depth===3?'toc-sub':'')+'" href="#'+esc(h.id)+'">'+esc(h.label)+'</a>').join('')+'</nav></aside>';
+}
 function dateOnly(ms){return new Date(ms).toISOString().slice(0,10);}
 async function markdown(md){return String(await unified().use(remarkParse).use(remarkGfm).use(remarkRehype).use(rehypeSlug).use(rehypeSanitize).use(rehypeStringify).process(md));}
 try {
@@ -85,12 +96,17 @@ try {
     const body=await markdown(replaceMedia(p.markdown));
     const data={"@context":"https://schema.org","@type":"BlogPosting",headline:p.title,description:p.summary,url:href(`/articles/${p.slug}/`),mainEntityOfPage:href(`/articles/${p.slug}/`),datePublished:`${p.date}T00:00:00+08:00`,dateModified:`${p.updated}T00:00:00+08:00`,inLanguage:"zh-CN",isAccessibleForFree:true,author:{"@type":"Person",name:"1998x Stack",url:href("/about/")},publisher:{"@type":"Organization",name:"1998x Stack",url:href("/")}};
     const schema=JSON.stringify(data).replace(/</g,"\\u003c");
-    page(`/articles/${p.slug}/`,p.title,`<a class="back" href="${pathUrl('/articles/')}">← 文章</a><article><h1>${esc(p.title)}</h1><p class="meta">${esc(p.date)} · 更新 ${esc(p.updated)}</p><p>${esc(p.summary)}</p><div class="prose">${body}</div></article><script type="application/ld+json">${schema}</script>`,p.summary);
+    page(`/articles/${p.slug}/`,p.title,`<a class="back" href="${pathUrl('/articles/')}">← 文章</a><article><h1>${esc(p.title)}</h1><p class="meta">${esc(p.date)} · 更新 ${esc(p.updated)}</p><p>${esc(p.summary)}</p><div class="article-layout"><div class="prose">${body}</div>${tableOfContents(body)}</div></article><script type="application/ld+json">${schema}</script>`,p.summary);
   }
-  page('/','Home Blog',`<section class="hero"><p class="eyebrow">ENGINEERING JOURNAL</p><h1>记录技术、设计与长期实践。</h1><p>家庭 Ubuntu 管理内容，云端只提供已发布的只读页面。</p><a href="${pathUrl('/articles/')}">浏览全部文章 →</a></section><section><h2>最近文章</h2>${records.slice(0,6).map(card).join('')||'<p>目前还没有已发布文章。</p>'}</section>`);
-  page('/articles/','全部文章',`<h1>全部文章</h1><p>${records.length} 篇已发布文章</p>${records.map(card).join('')}`);
+  const feature=records.find(p=>p.featured)||records[0];
+  const featured=feature?'<div class="feature"><aside><span class="flower">✳</span><span>EDITOR’S LETTER<br>本期推荐</span></aside><div><p class="eyebrow">精选阅读 / SELECTED ESSAY</p><h2><a href="'+pathUrl('/articles/'+feature.slug+'/')+'">'+esc(feature.title)+'</a></h2><p>'+esc(feature.summary)+'</p><a class="text-link" href="'+pathUrl('/articles/'+feature.slug+'/')+'">读这篇文章 ↗</a></div></div>':'';
+  const counts=Object.keys(tagsMap).filter(t=>records.some(p=>p.tags.includes(t)));
+  const topics=counts.slice(0,4).map((t,i)=>'<a class="topic" href="'+pathUrl('/tags/'+t+'/')+'"><span class="topic-index">0'+(i+1)+' / COLLECTION</span><span class="topic-icon" aria-hidden="true">'+(i%2?'❧':'✧')+'</span><strong>'+esc(tagsMap[t])+'</strong><span>'+records.filter(p=>p.tags.includes(t)).length+' 篇文章 ↗</span></a>').join('');
+  const homepage='<div class="hero"><div class="eyebrow-rule">1998X / A PERSONAL JOURNAL <span>EST. 2026 · 线上持续更新</span></div><div class="hero-content"><div><span class="eyebrow">✳ IDEAS, CRAFTED WITH CARE</span><h1>写给好奇心的<br><em>长期来信。</em></h1><p>在快速变化的技术世界里，保留一点慢下来的耐心。这里记录人工智能、系统工程、开源实践，以及那些值得反复思考的问题。</p><div class="hero-actions"><a class="primary" href="'+pathUrl('/articles/')+'">开始阅读 ↗</a><a class="text-link" href="'+pathUrl('/about/')+'">关于这个博客 →</a></div></div><div class="botanical" aria-hidden="true">✳<small>NOTES ON BUILDING<br>& THINKING</small></div></div><div class="hero-bottom"><span>一页一页，慢慢写。</span><span>'+records.length+' 篇文章 · '+counts.length+' 个主题</span></div></div>'+featured+'<section class="journal"><div class="section-title"><div><p class="eyebrow">FROM THE JOURNAL / 01</p><h2>最近写下的<span>。</span></h2><p>一些认真做过、想过、反复推敲过的事。</p></div><a class="text-link" href="'+pathUrl('/articles/')+'">所有文章 →</a></div><div class="articles">'+records.slice(0,6).map((p,i)=>card(p,i+1)).join('')+'</div></section>'+(topics?'<section class="collections"><div class="section-title"><div><p class="eyebrow">FOLLOW A THREAD / 02</p><h2>循着主题，深入一点<span>。</span></h2><p>把零散的想法，整理成能继续生长的知识。</p></div><a class="text-link" href="'+pathUrl('/tags/')+'">主题索引 →</a></div><div class="topic-grid">'+topics+'</div></section>':'');
+  page('/','1998x Journal',homepage);
+  page('/articles/','全部文章','<div class="page-heading"><p class="eyebrow">NOTES & ESSAYS</p><h1>所有文章。</h1><p>'+records.length+' 篇已发布文章，记录一些值得细读的事。</p></div><div class="articles">'+records.map((p,i)=>card(p,i+1)).join('')+'</div>');
   const active=Object.keys(tagsMap).filter(t=>records.some(p=>p.tags.includes(t)));
-  page('/tags/','文章标签',`<h1>标签</h1><div class="tags">${active.map(t=>`<a href="/tags/${t}/">${esc(tagsMap[t])}</a>`).join('')}</div>`);
+  page('/tags/','文章主题','<div class="page-heading"><p class="eyebrow">FOLLOW A THREAD</p><h1>主题索引。</h1><p>按照兴趣和问题，把阅读串成自己的路径。</p></div><div class="tags">'+active.map(t=>'<a href="'+pathUrl('/tags/'+t+'/')+'">'+esc(tagsMap[t])+'</a>').join('')+'</div>');
   for(const t of active)page(`/tags/${t}/`,tagsMap[t],`<h1>${esc(tagsMap[t])}</h1>${records.filter(p=>p.tags.includes(t)).map(card).join('')}`);
   const projects=JSON.parse(readFileSync(new URL('./projects.json',import.meta.url),'utf8'));
   page('/projects/','开源项目',`<h1>开源项目</h1>${projects.filter(p=>/^https:\/\/github\.com\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_.-]+$/.test(p.href)).map(p=>`<article class="card"><p class="meta">${esc(p.category)}</p><h2><a href="${esc(p.href)}" rel="noopener noreferrer">${esc(p.name)}</a></h2><p>${esc(p.description)}</p></article>`).join('')}`);
@@ -106,15 +122,15 @@ try {
   output('healthz','ok\n');
   // These assets are audited, static and loaded exclusively from the same origin.
   mkdirSync(join(stage,'assets'),{recursive:true});
-  for(const filename of ['site.css','search.js'])cpSync(new URL(`./assets/${filename}`,import.meta.url),join(stage,'assets',filename));
-  output('.home-blog-static-export','home-blog-public-v4\n');
+  for(const filename of ['site.css','search.js','theme.js'])cpSync(new URL(`./assets/${filename}`,import.meta.url),join(stage,'assets',filename));
+  output('.home-blog-static-export','home-blog-public-v5\n');
   const files=[];function walk(dir){for(const e of readdirSync(dir,{withFileTypes:true})){
     const file=join(dir,e.name);if(e.isDirectory())walk(file);else if(e.isFile()){
       const rel=relative(stage,file).split(sep).join('/');files.push({path:rel,bytes:statSync(file).size,sha256:sha(readFileSync(file))});
     }else throw Error('Unexpected exported file type');}}
   walk(stage);files.sort((a,b)=>a.path<b.path?-1:a.path>b.path?1:0);
   const digest=sha(JSON.stringify(files));
-  output('release-manifest.json',JSON.stringify({schema:1,version:'4.0.0',origin,posts:records.length,media:copied.size,digest,files},null,2)+'\n');
+  output('release-manifest.json',JSON.stringify({schema:1,version:'5.0.0',origin,posts:records.length,media:copied.size,digest,files},null,2)+'\n');
   if(existsSync(destination))rmSync(destination,{recursive:true,force:true});
   renameSync(stage,destination);
   console.log(JSON.stringify({destination,posts:records.length,media:copied.size,digest,files:files.length}));

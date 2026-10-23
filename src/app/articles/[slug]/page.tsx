@@ -18,9 +18,13 @@ export default async function ArticlePage({params}:{params:Promise<{slug:string}
   const {slug}=await params;
   const post=await getPost(slug); if(!post) notFound();
   const html=await markdownToHtml(post.body);
+  const headings=Array.from(html.matchAll(/<h([23]) id="([^"]+)">([\s\S]*?)<\/h\1>/g))
+    .map((match)=>({level:Number(match[1]),id:match[2],label:match[3].replace(/<[^>]*>/g,"").replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">")}));
+
   const jsonLd={"@context":"https://schema.org","@type":"BlogPosting",headline:post.title,description:post.summary,datePublished:post.date,dateModified:post.updated??post.date,author:{"@type":"Person",name:site.author},mainEntityOfPage:canonical(`/articles/${post.slug}/`)};
   return <article className="container post-layout"><div className="post-back"><Link href="/articles/">← 返回文章列表</Link></div><header className="post-header"><div className="eyebrow">FIELD NOTES / {formatDate(post.date)}</div><h1>{post.title}</h1><p>{post.summary}</p><div className="post-meta"><span>{post.readingMinutes} 分钟阅读</span><span>·</span>{post.updated && <span>更新：{formatDate(post.updated)}</span>}{post.tags.map(tag=><Link href={`/tags/${tag}/`} key={tag} className="chip">{tagLabels[tag]}</Link>)}</div></header>
-    <div className="post-content prose" dangerouslySetInnerHTML={{__html:html}}/>
+    <div className="v5-post-grid"><div className="post-content prose" dangerouslySetInnerHTML={{__html:html}}/>
+    {headings.length > 1 && <aside className="v5-toc"><span className="eyebrow">ON THIS PAGE</span><nav aria-label="文章目录">{headings.map(({id,label,level})=><a key={id} className={level===3?"v5-toc-sub":""} href={"#"+id}>{label}</a>)}</nav></aside>}</div>
     <footer className="post-end"><div className="end-symbol">✳</div><p>感谢阅读。好的技术文章值得反复修改。</p><Link href="/articles/" className="underlined-link">继续阅读其他文章 →</Link></footer>
     <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(jsonLd).replace(/</g,"\u003c")}}/>
   </article>;

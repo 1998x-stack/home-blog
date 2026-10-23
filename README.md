@@ -1,6 +1,6 @@
-# Home Blog V4.0 — private Ubuntu CMS + public static cloud mirror
+# Home Blog V5.0 — an editorial journal with a private Ubuntu CMS and a public static mirror
 
-Repo: <https://github.com/1998x-stack/home-blog> · release branch `v4.0` · production branch `main` (same source tree).
+Repo: <https://github.com/1998x-stack/home-blog> · release branch `v5.0` · production branch `main` (same source tree).
 
 > **Deploy only if allowed by your ISP and after all applicable mainland China hosting, ICP, public security and access rules are satisfied.** A cloud proxy or sync job does not waive these requirements. V4 keeps a public site online during home-network outages, but a single VPS is **not multi-node high availability**.
 
@@ -136,6 +136,21 @@ If you must urgently remove leaked content, rollback **can re-expose it**. Inste
 
 ## Branch policy
 
-`v1.0`, `v2.0`, and `v3.0` remain preserved release branches; `v4.0` contains this public-mirror architecture. `main` tracks the latest passing release's source tree. When merging with a merge commit the *commit SHA* can differ; check `git rev-parse main^{tree}` and `git rev-parse v4.0^{tree}` for equality. Do not advance `main` until the required tests pass.
+The historical release branches `v1.0`, `v2.0`, `v3.0`, `v4.0` remain available. `v5.0` builds upon the newer `main` source (including XStack papers and deployment helpers) without discarding those commits. After CI passes, `main` is updated to the V5 release.
 
-Next step if truly multi-node HA is needed: replicate the **static public** release across two separately provisioned compliant cloud instances plus DNS or CDN failover; never share writable SQLite between independent CMS nodes.
+For merge commits, commit hashes may differ even when content is identical. Compare the Git tree hashes rather than merely branch HEAD hashes.
+
+## V5 visual system and publishing
+
+See [docs/v5-editorial-design.md](docs/v5-editorial-design.md) for design tokens, component rules, accessibility, responsive testing and acceptance criteria.
+
+- `src/app/v5.css` is the new layer over the existing CMS-compatible styles.
+- The CMS front-end and static public mirror share editorial hierarchy and warm paper/sage color tokens; they are separate renderers, **not pixel-identical**.
+- Public export now includes `assets/theme.js` for local theme preference. Both themes support keyboard navigation and reduced motion.
+- V5 keeps all data and release safety barriers: publication status checks, sanitized Markdown, public media allowlist, SHA-256 manifest and atomic release switch.
+- Never expose the private `/admin`, `/api`, `Session` or database through the public mirror.
+- Run `npm test` and `npm run public:test` before publishing. Review in a browser at 375px, 768px and 1440px.
+
+## Future reliability
+
+Multi-node high availability requires at least two separate public mirrors plus DNS or CDN failover; do not share SQLite write access between independently hosted CMS processes.
