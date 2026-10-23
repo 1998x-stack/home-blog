@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  displayName  String
+  passwordHash String
+  role         String        @default("EDITOR")
+  disabled     Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  sessions     Session[]
+  posts        Post[]
+  media        Media[]
+  revisions    PostRevision[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  @@index([userId, expiresAt])
+}
+
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now())
+  @@index([key, createdAt])
+}
+
+model Post {
+  id          String         @id @default(cuid())
+  slug        String         @unique
+  title       String
+  summary     String
+  markdown    String
+  tags        String         @default("[]")
+  featured    Boolean        @default(false)
+  status      String         @default("DRAFT")
+  revision    Int            @default(1)
+  publishedAt DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  authorId    String
+  author      User           @relation(fields: [authorId], references: [id])
+  revisions   PostRevision[]
+  @@index([status, publishedAt])
+}
+
+model PostRevision {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  revision  Int
+  title     String
+  summary   String
+  markdown  String
+  tags      String
+  status    String
+  editorId  String
+  editor    User     @relation(fields: [editorId], references: [id])
+  createdAt DateTime @default(now())
+  @@unique([postId, revision])
+}
+
+model Media {
+  id           String   @id @default(cuid())
+  originalName String
+  storedName   String   @unique
+  mimeType     String
+  byteSize     Int
+  sha256       String
+  isPublic     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  uploaderId   String
+  uploader     User     @relation(fields: [uploaderId], references: [id])
+}

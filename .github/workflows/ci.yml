@@ -1,0 +1,30 @@
+name: V2 validate
+on:
+  push:
+    branches: [main, v2.0]
+  pull_request:
+    branches: [main, v2.0]
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - run: npm install --no-audit --no-fund
+      - run: npm run db:generate
+        env: {DATABASE_URL: 'file:./test.db'}
+      - run: npm test
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run build
+        env:
+          DATABASE_URL: 'file:./test.db'
+          CSRF_SECRET: 'unit-test-only-secret-should-not-go-to-prod'
+          APP_ORIGIN: 'http://localhost:3000'
+          NEXT_PUBLIC_SITE_URL: 'http://localhost:3000'
+      - run: npx prisma migrate deploy
+        env: {DATABASE_URL: 'file:./test.db'}
