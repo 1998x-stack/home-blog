@@ -1,6 +1,6 @@
 {
   "name": "home-blog",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -17,7 +17,9 @@
     "db:import:v1": "tsx scripts/import-v1.ts",
     "backup:create": "node scripts/backup.mjs",
     "backup:verify": "node scripts/restore.mjs",
-    "backup:restore": "node scripts/restore.mjs"
+    "backup:restore": "node scripts/restore.mjs",
+    "public:export": "node scripts/public/export-public.mjs",
+    "public:test": "python3 -m unittest discover -s tests -p \"test_public_release.py\""
   },
   "dependencies": {
     "@prisma/adapter-better-sqlite3": "^7.0.0",
@@ -46,5 +48,7 @@
     "tsx": "^4.20.0",
     "typescript": "5.9.3"
   },
-  "engines": {"node": ">=22.12.0"}
+  "engines": {
+    "node": ">=22.12.0"
+  }
 }

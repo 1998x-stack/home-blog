@@ -13,3 +13,5 @@ out/
 data/
 backups/
 src/generated/
+
+/dist-public/
