@@ -225,3 +225,9 @@ h1,h2,h3 { line-height: 1.22; letter-spacing: -.055em; }
 .admin-small-button {background:transparent;border:1px solid var(--line);border-radius:5px;padding:5px 9px;color:var(--ink);font-size:12px;}
 .admin-error {color:#b44141;} .admin-success {color:var(--accent);}
 @media(max-width:760px){.admin-grid{grid-template-columns:1fr}.admin-heading{align-items:start}.admin-nav{gap:10px}}
+
+/* V3 privacy-first aggregate analytics */
+.analytics-chart {display:flex;align-items:flex-end;gap:4px;height:176px;border-bottom:1px solid var(--border,#bbb);padding:12px 0 0;margin:20px 0 36px}
+.analytics-column {flex:1;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:5px}
+.analytics-bar {width:100%;min-height:3px;background:var(--accent,#5b82c8);border-radius:3px 3px 0 0}
+.analytics-column span {font-size:9px;line-height:1.2;color:var(--muted,#777)}

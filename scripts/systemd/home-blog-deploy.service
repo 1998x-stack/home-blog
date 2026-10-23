@@ -1,0 +1,9 @@
+[Unit]
+Description=Home Blog opt-in pull deployment from GHCR main
+Wants=docker.service network-online.target
+After=docker.service network-online.target
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/home-blog
+EnvironmentFile=/etc/home-blog/deploy.env
+ExecStart=/bin/bash /opt/home-blog/scripts/deploy-host.sh

@@ -1,15 +1,15 @@
-name: V2 validate
+name: V3 validate
 on:
   push:
-    branches: [main, v2.0]
+    branches: [main, v3.0]
   pull_request:
-    branches: [main, v2.0]
+    branches: [main, v3.0]
 permissions:
   contents: read
 jobs:
-  build:
+  validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -17,6 +17,8 @@ jobs:
       - run: npm install --no-audit --no-fund
       - run: npm run db:generate
         env: {DATABASE_URL: 'file:./test.db'}
+      - name: Install SQLite CLI
+        run: sudo apt-get update && sudo apt-get install -y sqlite3
       - run: npm test
       - run: npm run lint
       - run: npm run typecheck

@@ -86,3 +86,14 @@ model Media {
   uploaderId   String
   uploader     User     @relation(fields: [uploaderId], references: [id])
 }
+
+// Intentionally no IP address, user agent, cookie identifier, or referrer.
+// Counters are aggregate pageviews, NOT unique visitors.
+model PageViewDaily {
+  day       String
+  pageKey   String
+  views     Int      @default(0)
+  updatedAt DateTime @updatedAt
+  @@id([day, pageKey])
+  @@index([day])
+}

@@ -1,0 +1,9 @@
+[Unit]
+Description=Home Blog consistent DB+media archive with optional remote copy
+Wants=docker.service
+After=docker.service
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/home-blog
+EnvironmentFile=-/etc/home-blog/backup.env
+ExecStart=/bin/bash /opt/home-blog/scripts/backup-host.sh
