@@ -64,6 +64,7 @@ sudo docker compose run --rm home-blog npm run db:deploy
 # Bootstrap first admin interactively in your shell without recording credentials in .env:
 read -rp 'Admin email: ' ADMIN_EMAIL
 read -rsp 'Strong admin password: ' ADMIN_PASSWORD; echo
+export ADMIN_EMAIL ADMIN_PASSWORD
 sudo --preserve-env=ADMIN_EMAIL,ADMIN_PASSWORD docker compose run --rm \
   -e ADMIN_EMAIL -e ADMIN_PASSWORD home-blog npm run db:bootstrap
 unset ADMIN_EMAIL ADMIN_PASSWORD
