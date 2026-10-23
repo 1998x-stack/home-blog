@@ -40,7 +40,7 @@ sudo install -m 755 scripts/public/activate-release.py /srv/home-blog-public/bin
 sudo docker compose exec -T home-blog env PUBLIC_SITE_URL=https://xstack.space/blog PUBLIC_EXPORT_DIR=/data/public-export npm run public:export
 sudo mkdir -p dist-public
 sudo docker compose cp home-blog:/data/public-export/. ./dist-public/
-sudo tar -czf /tmp/xstack-blog-release.tar.gz -C dist-public .
+(cd dist-public && find . -type f -printf '%P\\0' | tar --null -T - -czf /tmp/xstack-blog-release.tar.gz)
 sudo python3 /srv/home-blog-public/bin/activate-release.py activate --root /srv/home-blog-public --archive /tmp/xstack-blog-release.tar.gz
 sudo cp deploy/public/nginx.conf /etc/nginx/conf.d/home-blog-public.conf
 sudo nginx -t && sudo systemctl reload nginx
@@ -76,3 +76,23 @@ curl -fsS https://xstack.space/robots.txt
 Submit `https://xstack.space/blog/sitemap.xml` to Google Search Console and Bing Webmaster Tools. Search indexing and AI answer citations cannot be guaranteed. An `llms.txt` document is experimental discovery metadata, **not an official ranking factor**. Edit and fact-check articles before publicizing. Never advertise the private CMS admin/API.
 
 For later updates: run `docker compose build` only when code changes require it, rerun `db:import:v1` for new slugs, export a fresh static mirror and atomically activate it; do not remove the named Docker volume.
+
+## Safer error-reporting Workbench helper
+
+The complete staged helper is at `scripts/deploy/ecs-workbench.sh`. It prints `phase`, `exit_code`, failed command and a `/var/log/home-blog-deploy/` log path on errors. Since secrets live in `.env`, do not paste `.env` in bug reports. Invoke:
+
+```bash
+cd /opt/home-blog
+sudo bash scripts/deploy/ecs-workbench.sh doctor
+sudo bash scripts/deploy/ecs-workbench.sh install
+sudo bash scripts/deploy/ecs-workbench.sh build # may fail if Docker Hub is unreachable
+# Alternative: sudo bash scripts/deploy/ecs-workbench.sh load-image /root/home-blog-image.tar.gz
+sudo bash scripts/deploy/ecs-workbench.sh migrate
+sudo bash scripts/deploy/ecs-workbench.sh bootstrap
+sudo bash scripts/deploy/ecs-workbench.sh import
+sudo bash scripts/deploy/ecs-workbench.sh start
+sudo bash scripts/deploy/ecs-workbench.sh publish
+sudo bash scripts/deploy/ecs-workbench.sh verify
+```
+
+Only after applicable ICP and hosting/access approval, and after checking the existing Caddyfile, opt in to the public action. The public action will not run without two explicit confirmation environment variables.

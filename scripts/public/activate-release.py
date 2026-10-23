@@ -89,6 +89,12 @@ def activate(archive, root, keep):
         if digest(json.dumps(canonical, ensure_ascii=False, separators=(',', ':')).encode('utf-8')) != manifest.get('digest'):
             # The exporter uses JS JSON.stringify, with compact separators and Unicode unescaped.
             raise ValueError('Release index digest mismatch')
+        # TemporaryDirectory starts at mode 0700. Export is public-only,
+        # so make every validated directory traversable by the Nginx worker.
+        for directory in stage.rglob('*'):
+            if directory.is_dir():
+                directory.chmod(0o755)
+        stage.chmod(0o755)
         release_id = manifest['digest'][:24]
         folder = releases / release_id
         if not folder.exists():
