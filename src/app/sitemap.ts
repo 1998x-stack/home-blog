@@ -1,3 +1,4 @@
+export const dynamic = "force-static";
 import type {MetadataRoute} from "next";
 import {getPosts,getActiveTags} from "@/lib/content";
 import {canonical} from "@/config/site";
