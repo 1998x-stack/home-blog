@@ -1,15 +1,31 @@
-FROM node:24-alpine AS builder
+FROM node:24-bookworm-slim AS build
 WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends openssl python3 make g++ && rm -rf /var/lib/apt/lists/*
 COPY package.json ./
-# V1 bootstrap: generate and commit a lockfile after the first verified install.
 RUN npm install --no-audit --no-fund
 COPY . .
-ARG NEXT_PUBLIC_SITE_URL=http://localhost:3000
-ENV NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN npm run build
+RUN npm run db:generate && npm run build
 
-FROM nginxinc/nginx-unprivileged:stable-alpine
-COPY deploy/nginx/default.conf /etc/nginx/conf.d/default.conf
-COPY --from=builder /app/out /usr/share/nginx/html
-EXPOSE 8080
+FROM node:24-bookworm-slim
+WORKDIR /app
+ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 HOSTNAME=0.0.0.0 PORT=3000
+RUN apt-get update && apt-get install -y --no-install-recommends openssl sqlite3 && rm -rf /var/lib/apt/lists/* \
+  && groupadd -g 1001 blog && useradd -u 1001 -g blog -m blog && mkdir -p /data/uploads && chown -R blog:blog /data
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/prisma ./prisma
+COPY --from=build /app/prisma.config.ts ./prisma.config.ts
+COPY --from=build /app/package.json ./package.json
+COPY --from=build /app/scripts ./scripts
+COPY --from=build /app/content ./content
+COPY --from=build /app/src/generated ./src/generated
+COPY --from=build /app/src/lib/password.ts ./src/lib/password.ts
+COPY --from=build /app/src/lib/validation.ts ./src/lib/validation.ts
+COPY --from=build /app/src/config ./src/config
+COPY --from=build /app/tsconfig.json ./tsconfig.json
+COPY --from=build /app/.next/standalone ./
+COPY --from=build /app/.next/static ./.next/static
+COPY --from=build /app/public ./public
+USER blog
+EXPOSE 3000
+CMD ["node", "server.js"]

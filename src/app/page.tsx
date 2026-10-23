@@ -1,11 +1,12 @@
+export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { getPosts } from "@/lib/content";
 import { ArticleCard } from "@/components/article-card";
 import { ProjectCard } from "@/components/project-card";
 import { projects } from "@/data/projects";
 
-export default function HomePage() {
-  const posts = getPosts();
+export default async function HomePage() {
+  const posts = await getPosts();
   const featured = posts.find((post) => post.featured) ?? posts[0];
   return <>
     <section className="hero container"><div className="hero-kicker"><span className="pulse"/> AN OPEN DIGITAL GARDEN <span className="hero-line"/></div>

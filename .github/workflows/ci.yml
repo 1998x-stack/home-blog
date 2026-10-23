@@ -1,35 +1,30 @@
-name: Validate and export
+name: V2 validate
 on:
   push:
-    branches: [v1.0]
+    branches: [main, v2.0]
   pull_request:
-    branches: [v1.0]
+    branches: [main, v2.0]
 permissions:
   contents: read
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
+        with: {node-version: '24'}
       - run: npm install --no-audit --no-fund
+      - run: npm run db:generate
+        env: {DATABASE_URL: 'file:./test.db'}
       - run: npm test
       - run: npm run lint
+      - run: npm run typecheck
       - run: npm run build
         env:
-          NEXT_PUBLIC_SITE_URL: https://example.com
-      - name: Verify generated artifacts
-        run: |
-          test -f out/index.html
-          test -f out/robots.txt
-          test -f out/sitemap.xml
-          test -f out/feed.xml
-          test -f out/articles/why-this-blog/index.html
-      - uses: actions/upload-artifact@v4
-        with:
-          name: home-blog-static
-          path: out/
-          retention-days: 7
+          DATABASE_URL: 'file:./test.db'
+          CSRF_SECRET: 'unit-test-only-secret-should-not-go-to-prod'
+          APP_ORIGIN: 'http://localhost:3000'
+          NEXT_PUBLIC_SITE_URL: 'http://localhost:3000'
+      - run: npx prisma migrate deploy
+        env: {DATABASE_URL: 'file:./test.db'}

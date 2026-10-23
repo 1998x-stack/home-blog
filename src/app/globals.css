@@ -196,3 +196,32 @@ h1,h2,h3 { line-height: 1.22; letter-spacing: -.055em; }
 @media (prefers-reduced-motion: reduce) {
   *,*::before,*::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
+
+/* Management interface (server-authenticated; no CSS framework required). */
+.admin-shell { min-height: 55vh; }
+.admin-box { max-width: 660px; }
+.admin-nav { display:flex; align-items:center; flex-wrap:wrap; gap:16px; margin: 16px 0 35px; border-bottom:1px solid var(--line); padding: 18px 0; }
+.admin-nav a { font-size:14px; }
+.admin-form { display:grid; gap:18px; width:100%; max-width:770px; margin:25px 0; }
+.admin-form label { font-size:14px; display:grid; gap:6px; color:var(--muted); }
+.admin-form input:not([type=checkbox]),.admin-form select,.admin-form textarea { width:100%; border:1px solid var(--line); color:var(--ink); background:var(--surface); padding:12px 13px; border-radius:6px; font:inherit; }
+.admin-form input[type=checkbox] { accent-color: var(--accent); }
+.admin-form textarea { resize:vertical; }
+.admin-form .admin-markdown { font-family:ui-monospace,monospace; font-size:13px; line-height:1.7; }
+.admin-form fieldset { border:1px solid var(--line); border-radius:7px; }
+.admin-form legend { color:var(--ink); font-size:14px; }
+.admin-tag-options { display:flex; flex-wrap:wrap; gap:16px; padding:7px; }
+.admin-tag-options label, .admin-inline { display:flex!important; flex-direction:row; align-items:center; gap:8px!important; }
+.admin-list,.admin-media-list {display:grid;gap:10px;margin:20px 0;}
+.admin-post {display:flex;gap:20px;flex-wrap:wrap;align-items:center;padding:18px;border:1px solid var(--line);border-radius:7px;}
+.admin-post strong {flex:1;min-width:170px;}
+.admin-post small {font-size:12px;color:var(--muted);}
+.admin-heading {display:flex;justify-content:space-between;align-items:center;gap:16px;}
+.admin-grid {display:grid;grid-template-columns:minmax(0, 2fr) minmax(230px, 1fr);gap:35px;}
+.admin-help {margin-top:26px;font-size:14px;color:var(--muted);}
+.admin-help h3 {color:var(--ink);margin:25px 0 10px;}
+.admin-versions {display:grid;gap:10px;}
+.admin-versions > div {border-bottom:1px solid var(--line);padding:8px 0;display:grid;gap:5px;}
+.admin-small-button {background:transparent;border:1px solid var(--line);border-radius:5px;padding:5px 9px;color:var(--ink);font-size:12px;}
+.admin-error {color:#b44141;} .admin-success {color:var(--accent);}
+@media(max-width:760px){.admin-grid{grid-template-columns:1fr}.admin-heading{align-items:start}.admin-nav{gap:10px}}

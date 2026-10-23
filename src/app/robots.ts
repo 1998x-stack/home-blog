@@ -1,6 +1,6 @@
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 import type {MetadataRoute} from "next";
 import {canonical,site} from "@/config/site";
 export default function robots():MetadataRoute.Robots{
-  return {rules:site.url.includes("localhost")?{userAgent:"*",disallow:"/"}:{userAgent:"*",allow:"/"},sitemap:canonical("/sitemap.xml")};
+  return {rules:site.url.includes("localhost")?{userAgent:"*",disallow:"/",disallow:["/admin/","/api/"]}:{userAgent:"*",allow:"/",disallow:["/admin/","/api/"]},sitemap:canonical("/sitemap.xml")};
 }

@@ -1,27 +1,24 @@
 services:
   home-blog:
-    build:
-      context: .
-      args:
-        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
+    build: .
     restart: unless-stopped
     init: true
-    read_only: true
-    tmpfs:
-      - /tmp:rw,noexec,nosuid,size=16m
-      - /var/cache/nginx:rw,noexec,nosuid,size=16m
-      - /var/run:rw,nosuid,size=4m
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      APP_ORIGIN: ${APP_ORIGIN:?configure APP_ORIGIN}
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:?configure NEXT_PUBLIC_SITE_URL}
+      DATABASE_URL: file:/data/blog.db
+      MEDIA_DIR: /data/uploads
+      CSRF_SECRET: ${CSRF_SECRET:?configure CSRF_SECRET}
+    volumes:
+      - blog_data:/data
     ports:
-      - "127.0.0.1:3000:8080"
+      - "127.0.0.1:3000:3000"
     security_opt:
       - no-new-privileges:true
-    healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
     logging:
       driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
+      options: {max-size: "10m", max-file: "3"}
+volumes:
+  blog_data: {}

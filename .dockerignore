@@ -1,10 +1,11 @@
-.git
-.github
 node_modules
 .next
-out
+.git
 .env
 .env.*
-*.log
+!.env.example
+*.db
+backups
+out
 *.tsbuildinfo
-coverage
+src/generated
