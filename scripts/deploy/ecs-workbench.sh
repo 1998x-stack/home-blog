@@ -202,7 +202,7 @@ publish)
   if [[ -L /etc/nginx/sites-enabled/default ]]; then
     default_target="$(readlink -f /etc/nginx/sites-enabled/default)"
     if [[ "$default_target" == /etc/nginx/sites-available/default ]] && grep -q 'root /var/www/html' "$default_target"; then
-      mv /etc/nginx/sites-enabled/default "/etc/nginx/sites-enabled/default.disabled.$(date +%s)"
+      mv /etc/nginx/sites-enabled/default "/etc/nginx/sites-available/default.disabled-link.$(date +%s)"
       log "Disabled stock Nginx welcome site; backup link retained."
     else
       log "WARNING: Custom Nginx default site left unchanged."
