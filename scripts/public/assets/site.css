@@ -15,3 +15,14 @@ article:not(.card){max-width:810px}.back{display:inline-block;margin:48px 0 20px
 @media(max-width:1120px){.pub-nav,main,.footer-intro,.footer-bottom{width:calc(100% - 72px)}}
 @media(max-width:760px){.pub-nav,main,.footer-intro,.footer-bottom{width:calc(100% - 38px)}.pub-nav{flex-wrap:wrap;gap:10px;min-height:70px}.nav-links{order:3;width:100%;border-top:1px solid var(--line);padding-top:10px;gap:20px}.nav-actions{margin-left:auto}.hero-content{grid-template-columns:1fr;min-height:auto;padding:60px 0 20px}.hero h1{font-size:clamp(2.8rem,11vw,4.3rem)}.botanical{font-size:65px;line-height:1.5}.botanical small{display:none}.hero-bottom{gap:10px}.feature{grid-template-columns:1fr;margin:25px 0 64px;padding:30px;gap:14px}.feature aside{border-right:0;border-bottom:1px solid var(--line);flex-direction:row;align-items:center;padding-bottom:12px}.flower{font-size:35px}.section-title{align-items:start;flex-direction:column;gap:12px}.card{grid-template-columns:34px 1fr;gap:10px}.collections{padding:30px 20px}.topic-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.topic{min-height:200px}.footer-bottom{flex-direction:column}.footer-intro{padding:50px 0 25px}}@media(max-width:400px){.topic-grid{grid-template-columns:1fr}.topic{min-height:160px}.topic-icon{font-size:30px;margin:6px auto}.nav-actions a span{display:none}.eyebrow-rule span{display:none}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.river svg{animation:none}*{transition:none!important}}
+
+/* Two-mode parity for long-form articles */
+.article-layout{display:grid;grid-template-columns:minmax(0,1fr) 165px;gap:38px;align-items:start;max-width:1040px}
+.article-layout .prose{min-width:0}
+.post-toc{position:sticky;top:24px;border-left:1px solid var(--line);padding:10px 0 10px 15px;max-height:calc(100vh - 48px);overflow-y:auto}
+.post-toc nav{display:flex;flex-direction:column;gap:11px;margin-top:16px;font-size:.76rem;line-height:1.7}
+.post-toc nav a{color:var(--muted)}
+.post-toc nav a:hover{color:var(--accent)}
+.post-toc .toc-sub{padding-left:10px;font-size:.73rem}
+@media(max-width:800px){.article-layout{grid-template-columns:1fr}.post-toc{grid-row:1;position:static;max-height:none;border:1px solid var(--line);background:var(--surface);padding:14px 18px;margin-top:25px}.post-toc nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:450px){.post-toc nav{grid-template-columns:1fr}}

@@ -154,3 +154,14 @@ h1,h2,h3 {letter-spacing:-.035em}
 }
 @media(max-width:380px){.v5-series-grid{grid-template-columns:1fr}.v5-series-card{min-height:170px}.v5-series-card .v5-mark{margin:5px auto}}
 @media(prefers-reduced-motion:reduce){.v5-river svg{animation:none}.v5-series-card,.v5-button-primary{transition:none}}
+
+/* V5 long-form reading: sticky, semantic table of contents */
+.v5-post-grid{display:grid;grid-template-columns:minmax(0,1fr) 184px;gap:45px;align-items:start}
+.v5-post-grid .prose{min-width:0}
+.v5-toc{position:sticky;top:30px;max-height:calc(100vh - 60px);overflow-y:auto;padding-left:18px;border-left:1px solid var(--line);font-size:.78rem}
+.v5-toc nav{display:flex;flex-direction:column;gap:12px;margin-top:20px;line-height:1.65}
+.v5-toc nav a{color:var(--muted);border-left:2px solid transparent;padding-left:10px}
+.v5-toc nav a:hover,.v5-toc nav a:focus-visible{color:var(--accent);border-color:var(--accent)}
+.v5-toc .v5-toc-sub{margin-left:12px;font-size:.75rem}
+@media(max-width:850px){.v5-post-grid{grid-template-columns:1fr}.v5-toc{position:static;grid-row:1;max-height:none;border:1px solid var(--line);padding:17px 20px;background:var(--surface);margin-bottom:18px}.v5-toc nav{margin-top:10px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.v5-toc nav a{padding-left:6px}}
+@media(max-width:450px){.v5-toc nav{grid-template-columns:1fr}}

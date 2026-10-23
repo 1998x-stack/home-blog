@@ -57,6 +57,12 @@ function card(p,index){
   const tags=p.tags.map(t=>'<a href="'+pathUrl('/tags/'+t+'/')+'">'+esc(tagsMap[t])+'</a>').join('');
   return '<article class="card"><span class="card-index">'+String(index??1).padStart(2,'0')+'</span><div><p class="meta">'+esc(p.date)+' · 一篇技术笔记</p><h2><a href="'+pathUrl('/articles/'+p.slug+'/')+'">'+esc(p.title)+' <span aria-hidden="true">↗</span></a></h2><p>'+esc(p.summary)+'</p><div class="tags">'+tags+'</div></div></article>';
 }
+function tableOfContents(body){
+  const entries=Array.from(body.matchAll(/<h([23]) id="([^"]+)">([\s\S]*?)<\/h[23]>/g))
+    .map(m=>({depth:Number(m[1]),id:m[2],label:m[3].replace(/<[^>]*>/g,'')}));
+  if(entries.length<2)return '';
+  return '<aside class="post-toc"><span class="eyebrow">ON THIS PAGE</span><nav aria-label="文章目录">'+entries.map(h=>'<a class="'+(h.depth===3?'toc-sub':'')+'" href="#'+esc(h.id)+'">'+esc(h.label)+'</a>').join('')+'</nav></aside>';
+}
 function dateOnly(ms){return new Date(ms).toISOString().slice(0,10);}
 async function markdown(md){return String(await unified().use(remarkParse).use(remarkGfm).use(remarkRehype).use(rehypeSlug).use(rehypeSanitize).use(rehypeStringify).process(md));}
 try {
@@ -90,7 +96,7 @@ try {
     const body=await markdown(replaceMedia(p.markdown));
     const data={"@context":"https://schema.org","@type":"BlogPosting",headline:p.title,description:p.summary,url:href(`/articles/${p.slug}/`),mainEntityOfPage:href(`/articles/${p.slug}/`),datePublished:`${p.date}T00:00:00+08:00`,dateModified:`${p.updated}T00:00:00+08:00`,inLanguage:"zh-CN",isAccessibleForFree:true,author:{"@type":"Person",name:"1998x Stack",url:href("/about/")},publisher:{"@type":"Organization",name:"1998x Stack",url:href("/")}};
     const schema=JSON.stringify(data).replace(/</g,"\\u003c");
-    page(`/articles/${p.slug}/`,p.title,`<a class="back" href="${pathUrl('/articles/')}">← 文章</a><article><h1>${esc(p.title)}</h1><p class="meta">${esc(p.date)} · 更新 ${esc(p.updated)}</p><p>${esc(p.summary)}</p><div class="prose">${body}</div></article><script type="application/ld+json">${schema}</script>`,p.summary);
+    page(`/articles/${p.slug}/`,p.title,`<a class="back" href="${pathUrl('/articles/')}">← 文章</a><article><h1>${esc(p.title)}</h1><p class="meta">${esc(p.date)} · 更新 ${esc(p.updated)}</p><p>${esc(p.summary)}</p><div class="article-layout"><div class="prose">${body}</div>${tableOfContents(body)}</div></article><script type="application/ld+json">${schema}</script>`,p.summary);
   }
   const feature=records.find(p=>p.featured)||records[0];
   const featured=feature?'<div class="feature"><aside><span class="flower">✳</span><span>EDITOR’S LETTER<br>本期推荐</span></aside><div><p class="eyebrow">精选阅读 / SELECTED ESSAY</p><h2><a href="'+pathUrl('/articles/'+feature.slug+'/')+'">'+esc(feature.title)+'</a></h2><p>'+esc(feature.summary)+'</p><a class="text-link" href="'+pathUrl('/articles/'+feature.slug+'/')+'">读这篇文章 ↗</a></div></div>':'';
