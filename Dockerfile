@@ -4,7 +4,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends openssl python3
 COPY package.json ./
 RUN npm install --no-audit --no-fund
 COPY . .
-ENV NEXT_TELEMETRY_DISABLED=1
+# Build-only values: needed while Next.js collects route metadata.
+# This stage is not the runtime image; real credentials are supplied via Compose.
+ENV NEXT_TELEMETRY_DISABLED=1 \
+    DATABASE_URL=file:./build.db \
+    APP_ORIGIN=http://localhost:3000 \
+    NEXT_PUBLIC_SITE_URL=http://localhost:3000 \
+    CSRF_SECRET=build-time-placeholder-not-for-runtime-use-0123456789
 RUN npm run db:generate && npm run build
 
 FROM node:24-bookworm-slim
