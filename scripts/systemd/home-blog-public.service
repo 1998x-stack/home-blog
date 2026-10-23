@@ -1,0 +1,11 @@
+[Unit]
+Description=Export published Home Blog content and deploy read-only mirror
+Wants=network-online.target docker.service
+After=network-online.target docker.service
+[Service]
+Type=oneshot
+User=ubuntu
+WorkingDirectory=/opt/home-blog
+EnvironmentFile=/etc/home-blog/public.env
+ExecStart=/bin/bash /opt/home-blog/scripts/public/publish-public.sh
+TimeoutStartSec=1200

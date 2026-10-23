@@ -9,3 +9,5 @@ backups
 out
 *.tsbuildinfo
 src/generated
+
+dist-public

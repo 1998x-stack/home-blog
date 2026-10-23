@@ -1,0 +1,5 @@
+[
+  {"name":"Home Blog","category":"WEB / OPEN SOURCE","description":"Next.js 博客与家庭服务器工程实践。","href":"https://github.com/1998x-stack/home-blog","technologies":["Next.js","SQLite","Docker"]},
+  {"name":"Nebula Notebook","category":"DEVELOPER TOOLS","description":"交互式计算笔记与执行环境实验。","href":"https://github.com/1998x-stack/Nebula-Notebook","technologies":["Notebook","Python"]},
+  {"name":"Distributed Web Search","category":"DISTRIBUTED SYSTEMS","description":"分布式爬取、索引与搜索实验。","href":"https://github.com/1998x-stack/distributed-web-search","technologies":["Search","Docker"]}
+]

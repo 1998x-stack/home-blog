@@ -1,0 +1,10 @@
+[Unit]
+Description=Publish Home Blog read-only cloud mirror every 30 minutes
+[Timer]
+OnBootSec=10min
+OnUnitInactiveSec=30min
+RandomizedDelaySec=2min
+Persistent=true
+Unit=home-blog-public.service
+[Install]
+WantedBy=timers.target

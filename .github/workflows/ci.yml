@@ -1,25 +1,25 @@
-name: V3 validate
+name: V4 validate
 on:
   push:
-    branches: [main, v3.0]
+    branches: [main, v4.0]
   pull_request:
-    branches: [main, v3.0]
+    branches: [main, v4.0]
 permissions:
   contents: read
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: {node-version: '24'}
+      - run: sudo apt-get update && sudo apt-get install -y sqlite3 nginx
       - run: npm install --no-audit --no-fund
       - run: npm run db:generate
         env: {DATABASE_URL: 'file:./test.db'}
-      - name: Install SQLite CLI
-        run: sudo apt-get update && sudo apt-get install -y sqlite3
       - run: npm test
+      - run: npm run public:test
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run build
@@ -30,5 +30,7 @@ jobs:
           NEXT_PUBLIC_SITE_URL: 'http://localhost:3000'
       - run: npx prisma migrate deploy
         env: {DATABASE_URL: 'file:./test.db'}
+      - name: Nginx static mirror config syntax
+        run: sudo cp deploy/public/nginx.conf /etc/nginx/conf.d/home-blog-public.conf && sudo nginx -t
       - name: Validate production Docker image
         run: docker build --progress=plain -t home-blog:ci .

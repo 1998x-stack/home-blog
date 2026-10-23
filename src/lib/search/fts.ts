@@ -23,11 +23,11 @@ export async function searchPublishedPosts(raw: string, limit = 20): Promise<Sea
   const max = Math.min(Math.max(1, limit), 30);
   let ids: string[];
   if ([...query].length < 3) {
-    const pattern = `%${query.replace(/[\\%_]/g, "\\$&")}%`;
+    const pattern = `%${query.replace(/[!%_]/g, "!$&")}%`;
     const result = await db.$queryRaw<{id:string}[]>`
       SELECT id FROM "Post" WHERE status = 'PUBLISHED' AND publishedAt IS NOT NULL
-      AND (title LIKE ${pattern} ESCAPE '\\' OR summary LIKE ${pattern} ESCAPE '\\'
-      OR markdown LIKE ${pattern} ESCAPE '\\') LIMIT 100`;
+      AND (title LIKE ${pattern} ESCAPE '!' OR summary LIKE ${pattern} ESCAPE '!'
+      OR markdown LIKE ${pattern} ESCAPE '!') LIMIT 100`;
     ids = result.map(x => x.id);
   } else {
     const phrase = `"${query.replace(/"/g, '""')}"`;
