@@ -1,9 +1,9 @@
-name: V4 validate
+name: V5 validate
 on:
   push:
-    branches: [main, v4.0]
+    branches: [main, v5.0]
   pull_request:
-    branches: [main, v4.0]
+    branches: [main, v5.0]
 permissions:
   contents: read
 jobs:
