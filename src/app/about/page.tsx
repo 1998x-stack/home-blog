@@ -1,0 +1,4 @@
+import type {Metadata} from "next";
+import {canonical,site} from "@/config/site";
+export const metadata:Metadata={title:"关于本站",alternates:{canonical:canonical("/about/")}};
+export default function AboutPage(){return <section className="container page-section about-page"><div className="page-intro"><span className="eyebrow">A NOTE ABOUT THIS PLACE</span><h1>关于这座数字花园<span className="title-period">.</span></h1><p>一个长期维护的公开技术笔记空间。</p></div><div className="about-content"><h2>为什么写？</h2><p>知识需要在写作、实验和代码中反复验证。这里收录系统设计、开发实践、开源项目和阶段性思考。</p><h2>怎么构建？</h2><p>博客采用 Next.js 静态导出，文章存放在 Git 仓库的 Markdown 文件中。公开站点不需要数据库或动态应用服务器，部署也可以在家里的 Ubuntu 上完成。</p><h2>联系与代码</h2><p>你可以在 <a href={site.github} rel="noopener noreferrer" target="_blank">GitHub ↗</a> 查看项目，或为 <a href={site.repo} rel="noopener noreferrer" target="_blank">Home Blog 仓库 ↗</a> 提交改进建议。</p></div></section>}
