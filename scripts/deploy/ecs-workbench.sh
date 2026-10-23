@@ -143,7 +143,7 @@ YAML
   ;;
 migrate)
   check_env; check_image; PHASE=prisma-migration
-  compose run --rm --no-build home-blog npm run db:deploy
+  compose run --rm --pull never home-blog npm run db:deploy
   ;;
 bootstrap)
   check_env; check_image; PHASE=admin-bootstrap
@@ -153,13 +153,13 @@ bootstrap)
   echo
   [[ "$ADMIN_EMAIL" == *"@"* && "$(printf %s "$ADMIN_PASSWORD" | wc -c)" -ge 12 ]] || fail "Email invalid or password too short."
   export ADMIN_EMAIL ADMIN_PASSWORD
-  compose run --rm --no-build -e ADMIN_EMAIL -e ADMIN_PASSWORD home-blog npm run db:bootstrap
+  compose run --rm --pull never -e ADMIN_EMAIL -e ADMIN_PASSWORD home-blog npm run db:bootstrap
   unset ADMIN_EMAIL ADMIN_PASSWORD
   log "Admin created. Do not repeat bootstrap."
   ;;
 import)
   check_env; check_image; PHASE=markdown-import
-  compose run --rm --no-build home-blog npm run db:import:v1
+  compose run --rm --pull never home-blog npm run db:import:v1
   log "Existing article slugs are not overwritten."
   ;;
 start)
