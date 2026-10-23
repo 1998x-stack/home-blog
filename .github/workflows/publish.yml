@@ -1,7 +1,7 @@
-name: Publish tested V4 image
+name: Publish tested V5 image
 on:
   workflow_run:
-    workflows: ["V4 validate"]
+    workflows: ["V5 validate"]
     types: [completed]
 permissions:
   contents: read
