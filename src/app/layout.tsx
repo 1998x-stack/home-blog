@@ -4,6 +4,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { canonical, site } from "@/config/site";
 import {PageViewTracker} from "@/components/analytics/page-view";
 import "./globals.css";
+import "./v5.css";
 
 export const dynamic = "force-dynamic";
 export const viewport: Viewport = {width: "device-width", initialScale: 1, colorScheme: "light dark"};
