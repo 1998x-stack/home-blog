@@ -18,7 +18,8 @@ const dbPath=resolve(dbUrl.slice(5));
 const mediaDir=resolve(process.env.MEDIA_DIR??'/data/uploads');
 const destination=resolve(process.env.PUBLIC_EXPORT_DIR??'./dist-public');
 const origin=(process.env.PUBLIC_SITE_URL??'').replace(/\/$/,'');
-if(!origin || !/^https:\/\/[^/?#]+$/i.test(origin) && !(process.env.PUBLIC_EXPORT_ALLOW_HTTP==='YES' && /^http:\/\/[^/?#]+$/i.test(origin))) throw Error('PUBLIC_SITE_URL must be an HTTPS origin');
+if(!origin || !/^https:\/\/[^/?#]+(?:\/[a-zA-Z0-9_-]+)*$/i.test(origin) && !(process.env.PUBLIC_EXPORT_ALLOW_HTTP==='YES' && /^http:\/\/[^/?#]+(?:\/[a-zA-Z0-9_-]+)*$/i.test(origin))) throw Error('PUBLIC_SITE_URL must be an HTTPS origin');
+const basePath=new URL(origin).pathname.replace(/\/$/,'');
 if(!existsSync(dbPath))throw Error('Source database missing');
 if([dbPath,mediaDir,'/',dirname(dbPath)].includes(destination)||destination.startsWith(mediaDir+'/')||dbPath.startsWith(destination+'/')||mediaDir.startsWith(destination+'/'))throw Error('Refusing unsafe export path');
 if(existsSync(destination) && !existsSync(join(destination,'.home-blog-static-export'))) throw Error('Refusing to replace directory without export marker');
@@ -27,7 +28,7 @@ const stage=mkdtempSync(join(dirname(destination),'.home-blog-export-'));
 const esc=(s)=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const xml=esc;
 const slugSafe=s=>typeof s==='string'&&/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(s);
-const tagsMap={nextjs:'Next.js',engineering:'工程实践',architecture:'系统架构',writing:'写作',devops:'DevOps'};
+const tagsMap={nextjs:'Next.js',engineering:'工程实践',architecture:'系统架构',writing:'写作',devops:'DevOps',llm:'大语言模型',research:'论文精读',alignment:'模型对齐'};
 const sha=buf=>createHash('sha256').update(buf).digest('hex');
 function output(path,contents){
   const full=join(stage,path);mkdirSync(dirname(full),{recursive:true});writeFileSync(full,contents,{mode:0o644});
@@ -43,13 +44,14 @@ function timestamp(value){
   return Date.parse(String(value));
 }
 function href(path){return origin+path;}
+function pathUrl(path){return basePath+path;}
 function shell(title,body,description='技术文章与工程实践笔记'){
   const desc=esc(description).slice(0,600);
-  return `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)} · Home Blog</title><meta name="description" content="${desc}"><link rel="canonical" href="${esc(href(currentPath))}"><link rel="stylesheet" href="/assets/site.css"><link rel="alternate" type="application/rss+xml" href="/feed.xml" title="Home Blog"></head><body><header><nav><a class="brand" href="/">Home Blog</a><a href="/articles/">文章</a><a href="/tags/">标签</a><a href="/projects/">项目</a><a href="/about/">关于</a><a href="/search/">搜索</a></nav></header><main>${body}</main><footer><p>1998x Stack · 公共只读镜像 · <a href="https://github.com/1998x-stack/home-blog" rel="noopener noreferrer">GitHub</a></p></footer></body></html>`;
+  return `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)} · Home Blog</title><meta name="description" content="${desc}"><meta property="og:type" content="${currentPath.startsWith('/articles/')?'article':'website'}"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${desc}"><meta property="og:url" content="${esc(href(currentPath))}"><meta property="og:locale" content="zh_CN"><meta name="twitter:card" content="summary"><meta name="robots" content="${currentPath==='/search/'?'noindex,follow':'index,follow'}"><link rel="canonical" href="${esc(href(currentPath))}"><link rel="stylesheet" href="${pathUrl('/assets/site.css')}"><link rel="alternate" type="application/rss+xml" href="${pathUrl('/feed.xml')}" title="Home Blog"></head><body><header><nav><a class="brand" href="${pathUrl('/')}">Home Blog</a><a href="${pathUrl('/articles/')}">文章</a><a href="${pathUrl('/tags/')}">标签</a><a href="${pathUrl('/projects/')}">项目</a><a href="${pathUrl('/about/')}">关于</a><a href="${pathUrl('/search/')}">搜索</a></nav></header><main>${body}</main><footer><p>1998x Stack · 公共只读镜像 · <a href="https://github.com/1998x-stack/home-blog" rel="noopener noreferrer">GitHub</a></p></footer></body></html>`;
 }
 let currentPath='/';
 function page(path,title,body,description){currentPath=path;output(path==='/'?'index.html':`${path.slice(1)}index.html`,shell(title,body,description));}
-function card(p){return `<article class="card"><time>${esc(p.date)}</time><h2><a href="/articles/${esc(p.slug)}/">${esc(p.title)}</a></h2><p>${esc(p.summary)}</p><div class="tags">${p.tags.map(t=>`<a href="/tags/${t}/">${esc(tagsMap[t])}</a>`).join('')}</div></article>`;}
+function card(p){return `<article class="card"><time>${esc(p.date)}</time><h2><a href="${pathUrl(`/articles/${esc(p.slug)}/`)}">${esc(p.title)}</a></h2><p>${esc(p.summary)}</p><div class="tags">${p.tags.map(t=>`<a href="${pathUrl(`/tags/${t}/`)}">${esc(tagsMap[t])}</a>`).join('')}</div></article>`;}
 function dateOnly(ms){return new Date(ms).toISOString().slice(0,10);}
 async function markdown(md){return String(await unified().use(remarkParse).use(remarkGfm).use(remarkRehype).use(rehypeSlug).use(rehypeSanitize).use(rehypeStringify).process(md));}
 try {
@@ -77,13 +79,15 @@ try {
       // Only copy media that appears in a published article.
       mkdirSync(join(stage,'media'),{recursive:true});cpSync(src,join(stage,'media',id+'.'+ext),{dereference:false});copied.add(id);
     }
-    return `/media/${id}.${ext}`;
+    return pathUrl(`/media/${id}.${ext}`);
   });}
   for(const p of records){
     const body=await markdown(replaceMedia(p.markdown));
-    page(`/articles/${p.slug}/`,p.title,`<a class="back" href="/articles/">← 文章</a><article><h1>${esc(p.title)}</h1><p class="meta">${esc(p.date)} · 更新 ${esc(p.updated)}</p><p>${esc(p.summary)}</p><div class="prose">${body}</div></article>`,p.summary);
+    const data={"@context":"https://schema.org","@type":"BlogPosting",headline:p.title,description:p.summary,url:href(`/articles/${p.slug}/`),mainEntityOfPage:href(`/articles/${p.slug}/`),datePublished:`${p.date}T00:00:00+08:00`,dateModified:`${p.updated}T00:00:00+08:00`,inLanguage:"zh-CN",isAccessibleForFree:true,author:{"@type":"Person",name:"1998x Stack",url:href("/about/")},publisher:{"@type":"Organization",name:"1998x Stack",url:href("/")}};
+    const schema=JSON.stringify(data).replace(/</g,"\\u003c");
+    page(`/articles/${p.slug}/`,p.title,`<a class="back" href="${pathUrl('/articles/')}">← 文章</a><article><h1>${esc(p.title)}</h1><p class="meta">${esc(p.date)} · 更新 ${esc(p.updated)}</p><p>${esc(p.summary)}</p><div class="prose">${body}</div></article><script type="application/ld+json">${schema}</script>`,p.summary);
   }
-  page('/','Home Blog',`<section class="hero"><p class="eyebrow">ENGINEERING JOURNAL</p><h1>记录技术、设计与长期实践。</h1><p>家庭 Ubuntu 管理内容，云端只提供已发布的只读页面。</p><a href="/articles/">浏览全部文章 →</a></section><section><h2>最近文章</h2>${records.slice(0,6).map(card).join('')||'<p>目前还没有已发布文章。</p>'}</section>`);
+  page('/','Home Blog',`<section class="hero"><p class="eyebrow">ENGINEERING JOURNAL</p><h1>记录技术、设计与长期实践。</h1><p>家庭 Ubuntu 管理内容，云端只提供已发布的只读页面。</p><a href="${pathUrl('/articles/')}">浏览全部文章 →</a></section><section><h2>最近文章</h2>${records.slice(0,6).map(card).join('')||'<p>目前还没有已发布文章。</p>'}</section>`);
   page('/articles/','全部文章',`<h1>全部文章</h1><p>${records.length} 篇已发布文章</p>${records.map(card).join('')}`);
   const active=Object.keys(tagsMap).filter(t=>records.some(p=>p.tags.includes(t)));
   page('/tags/','文章标签',`<h1>标签</h1><div class="tags">${active.map(t=>`<a href="/tags/${t}/">${esc(tagsMap[t])}</a>`).join('')}</div>`);
@@ -91,13 +95,14 @@ try {
   const projects=JSON.parse(readFileSync(new URL('./projects.json',import.meta.url),'utf8'));
   page('/projects/','开源项目',`<h1>开源项目</h1>${projects.filter(p=>/^https:\/\/github\.com\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_.-]+$/.test(p.href)).map(p=>`<article class="card"><p class="meta">${esc(p.category)}</p><h2><a href="${esc(p.href)}" rel="noopener noreferrer">${esc(p.name)}</a></h2><p>${esc(p.description)}</p></article>`).join('')}`);
   page('/about/','关于本站','<h1>关于本站</h1><p>这里记录软件工程、系统架构、分布式技术与长期实践。</p><p>博客由家用 Ubuntu 维护，公开页面以经过校验的只读快照发布。</p>');
-  page('/search/','搜索文章','<h1>搜索公开文章</h1><label for="q">关键词</label><input id="q" type="search" maxlength="80" autocomplete="off" placeholder="搜索文章标题、摘要、正文"><div id="results" aria-live="polite"></div><script src="/assets/search.js" defer></script>');
+  page('/search/','搜索文章','<h1>搜索公开文章</h1><label for="q">关键词</label><input id="q" type="search" maxlength="80" autocomplete="off" placeholder="搜索文章标题、摘要、正文"><div id="results" aria-live="polite"></div><script src="'+pathUrl('/assets/search.js')+'" defer></script>');
   const index=records.map(({slug,title,summary,markdown:body,tags,date})=>({slug,title,summary,tags,date,text:body.replace(/\/media\/[a-z0-9]{20,50}/g,'[media]').replace(/[`*_#[\]()!>~-]/g,' ').slice(0,10000)}));
   output('search-index.json',JSON.stringify(index));
   output('feed.xml',`<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>Home Blog</title><link>${xml(origin)}</link><description>技术与工程实践文章</description>${records.slice(0,40).map(p=>`<item><title>${xml(p.title)}</title><link>${xml(href(`/articles/${p.slug}/`))}</link><guid>${xml(href(`/articles/${p.slug}/`))}</guid><pubDate>${new Date(timestamp(p.publishedAt)).toUTCString()}</pubDate><description>${xml(p.summary)}</description></item>`).join('')}</channel></rss>`);
   const urls=['/','/articles/','/tags/','/search/','/about/','/projects/',...active.map(t=>`/tags/${t}/`),...records.map(p=>`/articles/${p.slug}/`)];
   output('sitemap.xml',`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls.map(u=>`<url><loc>${xml(href(u))}</loc></url>`).join('')}</urlset>`);
-  output('robots.txt',`User-agent: *\nAllow: /\nDisallow: /admin/\nSitemap: ${href('/sitemap.xml')}\n`);
+  output('robots.txt',`User-agent: *\nAllow: ${pathUrl('/')}\nSitemap: ${href('/sitemap.xml')}\n`);
+  output('llms.txt',`# 1998x Stack — 中文技术论文精读\n\n> 原创技术解读、工程分析与原论文引用。目录为辅助阅读，不保证被任何 AI 搜索引擎采用。\n\n## Articles\n\n${records.map(p=>`- [${p.title}](${href(`/articles/${p.slug}/`)}) — ${p.summary}`).join('\n')}\n`);
   output('healthz','ok\n');
   // These assets are audited, static and loaded exclusively from the same origin.
   mkdirSync(join(stage,'assets'),{recursive:true});

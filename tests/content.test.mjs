@@ -6,7 +6,7 @@ import matter from 'gray-matter';
 
 const postsDir = path.join(process.cwd(), 'content/posts');
 const files = fs.readdirSync(postsDir).filter(file => file.endsWith('.md'));
-const allowedTags = new Set(['nextjs','engineering','architecture','writing','devops']);
+const allowedTags = new Set(['nextjs','engineering','architecture','writing','devops','llm','research','alignment']);
 
 test('there are sample posts', () => assert.ok(files.length >= 2));
 test('all posts have valid metadata and distinct filenames', () => {
