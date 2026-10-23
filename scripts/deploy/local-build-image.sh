@@ -18,14 +18,32 @@ docker info >/dev/null
 SHA="$(git rev-parse HEAD)"
 echo "[INFO] source=$SHA"
 echo "[INFO] target=linux/amd64"
-PHASE=build
-if docker buildx version >/dev/null 2>&1; then
-  docker buildx build --platform linux/amd64 --load --progress plain \
-    --label "org.opencontainers.image.revision=$SHA" -t home-blog:ecs .
-else
-  [[ "$(uname -m)" == x86_64 ]] || { echo "Need Docker Buildx for ARM host." >&2; exit 2; }
-  docker build --platform linux/amd64 -t home-blog:ecs .
+PHASE=buildx-check
+if ! docker buildx version; then
+  echo "[ERROR] Docker Buildx is missing; this script will not fall back to legacy docker build." >&2
+  echo "[HINT] Ubuntu docker.io: sudo apt update && sudo apt install -y docker-buildx" >&2
+  echo "[HINT] Official Docker CE: sudo apt install -y docker-buildx-plugin" >&2
+  echo "[HINT] macOS: update/install Docker Desktop and make sure it is running." >&2
+  exit 11
 fi
+
+PHASE=registry-check
+echo "[INFO] Docker context: $(docker context show)"
+echo "[INFO] Configured registry mirrors:"
+docker info --format '{{json .RegistryConfig.Mirrors}}' || true
+echo "[INFO] Verifying official base image node:24-bookworm-slim (linux/amd64)."
+if ! docker pull --platform linux/amd64 node:24-bookworm-slim; then
+  echo "[ERROR] Cannot pull the official Node 24 base image." >&2
+  echo "[HINT] The tag exists: https://github.com/docker-library/official-images/blob/master/library/node" >&2
+  echo "[HINT] If configured, verify your Docker registry mirror actually carries this tag." >&2
+  echo "[HINT] Check curl -4 -I https://registry-1.docker.io/v2/; HTTP 401 is normally healthy." >&2
+  echo "[HINT] Do not modify Dockerfile to a random Node tag or disable TLS verification." >&2
+  exit 12
+fi
+
+PHASE=build
+docker buildx build --platform linux/amd64 --load --progress plain \
+  --label "org.opencontainers.image.revision=$SHA" -t home-blog:ecs .
 PHASE=verify
 TARGET="$(docker image inspect --format '{{.Os}}/{{.Architecture}}' home-blog:ecs)"
 [[ "$TARGET" == linux/amd64 ]] || { echo "[ERROR] wrong platform: $TARGET" >&2; exit 3; }
