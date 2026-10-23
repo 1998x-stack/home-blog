@@ -1,0 +1,15 @@
+# After ICP filing and authorized public launch. Nginx serves /srv/home-blog-public/current at 127.0.0.1:8081.
+xstack.space {
+    encode zstd gzip
+    redir /blog /blog/ 308
+
+    handle /robots.txt {
+        reverse_proxy 127.0.0.1:8081
+    }
+    handle_path /blog/* {
+        reverse_proxy 127.0.0.1:8081
+    }
+    handle {
+        respond "Not found" 404
+    }
+}

@@ -4,6 +4,9 @@ export const tagLabels = {
   "architecture": "系统架构",
   "writing": "写作",
   "devops": "DevOps",
+  "llm": "大语言模型",
+  "research": "论文精读",
+  "alignment": "模型对齐",
 } as const;
 
 export type TagSlug = keyof typeof tagLabels;
