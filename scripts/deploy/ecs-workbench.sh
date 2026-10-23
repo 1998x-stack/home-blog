@@ -118,7 +118,7 @@ install)
 build)
   check_env; check_image
   PHASE=docker-build
-  if docker compose -f compose.yaml build --progress plain; then
+  if docker compose --progress plain -f compose.yaml build; then
     rm -f .ecs-prebuilt
     log "Image built. Continue with migrate."
   else
