@@ -35,7 +35,7 @@ V3: `Post -> SQLite FTS5 trigram index (triggers) -> /api/search`; `browser path
 
 ## Setup (local dev)
 
-Requirements: Node.js 22.12+ (24 recommended), npm, SQLite local disk. You need `DATABASE_URL`, `CSRF_SECRET`, and `APP_ORIGIN`.
+Requirements: Node.js 22.12+ (24 recommended), npm, SQLite local disk. You need `DATABASE_URL`, `CSRF_SECRET`, `APP_ORIGIN`, and a consistent site origin. In Docker, `NEXT_PUBLIC_SITE_URL` is forwarded to runtime `SITE_URL` so server-rendered SEO URLs do not depend on the build-machine origin.
 
 ```bash
 cp .env.example .env

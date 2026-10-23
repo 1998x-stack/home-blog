@@ -5,6 +5,7 @@ import { canonical, site } from "@/config/site";
 import {PageViewTracker} from "@/components/analytics/page-view";
 import "./globals.css";
 
+export const dynamic = "force-dynamic";
 export const viewport: Viewport = {width: "device-width", initialScale: 1, colorScheme: "light dark"};
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),

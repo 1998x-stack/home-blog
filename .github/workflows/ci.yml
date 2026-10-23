@@ -30,3 +30,5 @@ jobs:
           NEXT_PUBLIC_SITE_URL: 'http://localhost:3000'
       - run: npx prisma migrate deploy
         env: {DATABASE_URL: 'file:./test.db'}
+      - name: Validate production Docker image
+        run: docker build --progress=plain -t home-blog:ci .
