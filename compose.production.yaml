@@ -1,0 +1,6 @@
+# Optional pull-based deployment from the GHCR image built on main.
+# Use: docker compose -f compose.yaml -f compose.production.yaml up -d
+services:
+  home-blog:
+    image: ghcr.io/1998x-stack/home-blog:main
+    build: !reset null

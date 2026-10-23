@@ -1,0 +1,9 @@
+[Unit]
+Description=Daily Home Blog backup
+[Timer]
+OnCalendar=*-*-* 03:15:00
+Persistent=true
+RandomizedDelaySec=20m
+Unit=home-blog-backup.service
+[Install]
+WantedBy=timers.target

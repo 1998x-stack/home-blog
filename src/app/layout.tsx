@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { canonical, site } from "@/config/site";
+import {PageViewTracker} from "@/components/analytics/page-view";
 import "./globals.css";
 
 export const viewport: Viewport = {width: "device-width", initialScale: 1, colorScheme: "light dark"};
@@ -18,6 +19,6 @@ export const metadata: Metadata = {
 
 export default function RootLayout({children}: Readonly<{children:React.ReactNode}>) {
   return <html lang={site.language} suppressHydrationWarning>
-    <body><a href="#main-content" className="skip-link">跳转到主要内容</a><div className="shell"><SiteHeader/><main id="main-content">{children}</main><SiteFooter/></div></body>
+    <body><PageViewTracker/><a href="#main-content" className="skip-link">跳转到主要内容</a><div className="shell"><SiteHeader/><main id="main-content">{children}</main><SiteFooter/></div></body>
   </html>;
 }

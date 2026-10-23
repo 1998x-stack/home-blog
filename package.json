@@ -1,6 +1,6 @@
 {
   "name": "home-blog",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -14,7 +14,10 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:bootstrap": "tsx scripts/bootstrap.ts",
-    "db:import:v1": "tsx scripts/import-v1.ts"
+    "db:import:v1": "tsx scripts/import-v1.ts",
+    "backup:create": "node scripts/backup.mjs",
+    "backup:verify": "node scripts/restore.mjs",
+    "backup:restore": "node scripts/restore.mjs"
   },
   "dependencies": {
     "@prisma/adapter-better-sqlite3": "^7.0.0",

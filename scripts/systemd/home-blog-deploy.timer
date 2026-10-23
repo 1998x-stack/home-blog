@@ -1,0 +1,9 @@
+[Unit]
+Description=Hourly check for published Home Blog image
+[Timer]
+OnCalendar=hourly
+RandomizedDelaySec=10m
+Persistent=true
+Unit=home-blog-deploy.service
+[Install]
+WantedBy=timers.target
