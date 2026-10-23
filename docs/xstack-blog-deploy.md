@@ -96,3 +96,23 @@ sudo bash scripts/deploy/ecs-workbench.sh verify
 ```
 
 Only after applicable ICP and hosting/access approval, and after checking the existing Caddyfile, opt in to the public action. The public action will not run without two explicit confirmation environment variables.
+
+## Offline Docker image from GitHub Actions (recommended if ECS times out)
+
+The manual workflow at .github/workflows/build-ecs-image.yml builds the default
+branch for linux/amd64, then uploads a short-lived artifact named home-blog-ecs-amd64.
+In GitHub: Actions -> Build ECS offline Docker image -> Run workflow. Download the
+artifact ZIP, extract home-blog-image.tar.gz and home-blog-image.tar.gz.sha256
+locally, then upload both to your ECS via Workbench file transfer or SCP.
+
+Once uploaded to /tmp on ECS, run:
+
+    cd /tmp
+    sha256sum -c home-blog-image.tar.gz.sha256
+    cd /opt/home-blog
+    sudo bash scripts/deploy/ecs-workbench.sh load-image /tmp/home-blog-image.tar.gz
+    sudo bash scripts/deploy/ecs-workbench.sh migrate
+
+The Compose override uses the prebuilt image instead of rebuilding it on the ECS.
+Compare the image's revision label with the checked-out Git commit if reproducibility
+is important; keep credentials out of image layers.

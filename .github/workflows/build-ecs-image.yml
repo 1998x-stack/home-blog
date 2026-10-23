@@ -1,0 +1,35 @@
+name: Build ECS offline Docker image
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-amd64:
+    name: Docker image for Shanghai ECS (linux/amd64)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build official Node 24 based home-blog image
+        run: |
+          docker build --platform linux/amd64 \
+            --label "org.opencontainers.image.revision=$GITHUB_SHA" \
+            --progress=plain \
+            --tag home-blog:ecs .
+      - name: Export portable image archive and checksum
+        run: |
+          set -euo pipefail
+          docker save home-blog:ecs | gzip -1 > home-blog-image.tar.gz
+          sha256sum home-blog-image.tar.gz > home-blog-image.tar.gz.sha256
+          ls -lh home-blog-image.tar.gz
+      - uses: actions/upload-artifact@v4
+        with:
+          name: home-blog-ecs-amd64
+          path: |
+            home-blog-image.tar.gz
+            home-blog-image.tar.gz.sha256
+          if-no-files-found: error
+          retention-days: 3
