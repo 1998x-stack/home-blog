@@ -1,16 +1,14 @@
 import {requireUser} from "@/lib/session";
-import {db} from "@/lib/prisma";
+import {getAnalyticsWindow} from "@/lib/analytics";
 
 export const dynamic="force-dynamic";
 export const metadata={title:"访问统计",robots:{index:false,follow:false}};
 export default async function AnalyticsPage(){
   await requireUser();
-  const from=new Date(Date.now()-29*86400000).toISOString().slice(0,10);
-  const entries=await db.pageViewDaily.findMany({where:{day:{gte:from}},orderBy:[{day:"asc"},{pageKey:"asc"}]});
+  const {entries,days}=await getAnalyticsWindow();
   const daily=new Map<string,number>();
   const pages=new Map<string,number>();
   for(const row of entries){daily.set(row.day,(daily.get(row.day)??0)+row.views);pages.set(row.pageKey,(pages.get(row.pageKey)??0)+row.views);}
-  const days=Array.from({length:30},(_,i)=>new Date(Date.now()-(29-i)*86400000).toISOString().slice(0,10));
   const peak=Math.max(1,...daily.values());
   const total=entries.reduce((n,v)=>n+v.views,0);
   const popular=[...pages].sort((a,b)=>b[1]-a[1]).slice(0,12);

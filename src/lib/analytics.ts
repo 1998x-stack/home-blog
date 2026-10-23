@@ -28,3 +28,13 @@ export async function recordPageView(pageKey:string) {
     update: {views:{increment:1}},
   });
 }
+
+export async function getAnalyticsWindow() {
+  const timestamp = Date.now();
+  const from = new Date(timestamp - 29 * 86400_000).toISOString().slice(0, 10);
+  const entries = await db.pageViewDaily.findMany({
+    where: {day: {gte: from}}, orderBy: [{day: "asc"}, {pageKey: "asc"}],
+  });
+  const days = Array.from({length: 30}, (_,i) => new Date(timestamp - (29-i)*86400_000).toISOString().slice(0,10));
+  return {entries, days};
+}

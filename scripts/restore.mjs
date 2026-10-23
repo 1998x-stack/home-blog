@@ -2,7 +2,7 @@
 /** Verify in isolated temp dir by default; --apply explicitly replaces /data after app stops. */
 import {execFileSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
-import {existsSync,mkdirSync,mkdtempSync,readFileSync,readdirSync,rmSync,renameSync,statSync} from 'node:fs';
+import {existsSync,mkdirSync,mkdtempSync,readFileSync,readdirSync,rmSync,renameSync} from 'node:fs';
 import {dirname,join,resolve} from 'node:path';
 const file=process.argv[2];
 const apply=process.argv.includes('--apply');

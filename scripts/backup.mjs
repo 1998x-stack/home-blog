@@ -35,7 +35,7 @@ function fileEntries(folder,rootName){
 try {
   // sqlite3's .backup takes a consistent online snapshot, including committed WAL transactions.
   execFileSync('sqlite3',[dbPath,`.backup '${join(stage,'blog.db').replaceAll("'","''")}'`],{stdio:'pipe'});
-  execFileSync('sqlite3',[join(stage,'blog.db'),'PRAGMA integrity_check;'],{encoding:'utf8'}).trim()==='ok'||(()=>{throw Error('SQLite integrity check failed');})();
+  if (execFileSync('sqlite3',[join(stage,'blog.db'),'PRAGMA integrity_check;'],{encoding:'utf8'}).trim() !== 'ok') throw Error('SQLite integrity check failed');
   mkdirSync(join(stage,'uploads'),{mode:0o700});
   if (existsSync(mediaPath)) execFileSync('cp',['-a',`${mediaPath}/.`,join(stage,'uploads')]);
   const files=[{path:'blog.db',size:statSync(join(stage,'blog.db')).size,sha256:sha(readFileSync(join(stage,'blog.db')))},...fileEntries(join(stage,'uploads'),'uploads')];
