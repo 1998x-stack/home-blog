@@ -35,7 +35,7 @@ V3: `Post -> SQLite FTS5 trigram index (triggers) -> /api/search`; `browser path
 
 ## Setup (local dev)
 
-Requirements: Node.js 22.12+ (24 recommended), npm, SQLite local disk. You need `DATABASE_URL`, `CSRF_SECRET`, `APP_ORIGIN`, and a consistent site origin. In Docker, `NEXT_PUBLIC_SITE_URL` is forwarded to runtime `SITE_URL` so server-rendered SEO URLs do not depend on the build-machine origin.
+Requirements: Node.js 22.12+ (24 recommended), npm, SQLite local disk. You need `DATABASE_URL`, `CSRF_SECRET`, and `APP_ORIGIN`.
 
 ```bash
 cp .env.example .env
@@ -77,6 +77,8 @@ curl -I http://127.0.0.1:3000/
 In some distributions `sudo --preserve-env` is restricted by policy. If so, use a locally approved secret injection method and never store the admin password in `compose.yaml`, `.env` or a Git repository. To log in, visit `https://blog.example.com/admin/login/` **after configuring authorized HTTPS access**. Production cookies require HTTPS; local `curl` only checks the public homepage.
 
 The runtime container uses a named `/data` Docker volume; deleting/recreating the app container does not erase the SQLite database or uploads. The volume must be backed up independently. The application binds exclusively to `127.0.0.1:3000`; use a compliant reverse proxy for public HTTPS. Follow domestic ISP and ICP requirements; tunnels do not exempt them.
+
+> V3 maintenance patch: short-keyword FTS fallback uses SQLite `ESCAPE '!'` for literal `%`, `_`, and `!` matching; regression test included.
 
 ## V3 search: SQLite FTS5
 
