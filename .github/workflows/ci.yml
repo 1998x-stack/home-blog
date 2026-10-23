@@ -18,6 +18,7 @@ jobs:
       - run: npm install --no-audit --no-fund
       - run: npm run db:generate
         env: {DATABASE_URL: 'file:./test.db'}
+      - run: bash -n scripts/deploy/ecs-workbench.sh scripts/public/publish-public.sh
       - run: npm test
       - run: npm run public:test
       - run: npm run lint

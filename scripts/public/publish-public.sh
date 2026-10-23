@@ -14,7 +14,7 @@ docker compose cp home-blog:/data/public-export/. ./dist-public
 bundle="$(mktemp "${TMPDIR:-/tmp}/home-blog-public.XXXXXX.tar.gz")"
 trap 'rm -f "$bundle"' EXIT
 # No private files: pack ONLY dist-public, never database, env vars or repository.
-tar -czf "$bundle" -C dist-public .
+(cd dist-public && find . -type f -printf '%P\0' | tar --null -T - -czf "$bundle")
 remote_file="/srv/home-blog-public/incoming/$(sha256sum "$bundle" | cut -c1-32).tar.gz"
 ssh -o BatchMode=yes -o StrictHostKeyChecking=yes "$PUBLIC_SSH_TARGET" 'mkdir -p /srv/home-blog-public/incoming'
 scp -q -o BatchMode=yes -o StrictHostKeyChecking=yes "$bundle" "${PUBLIC_SSH_TARGET}:${remote_file}"

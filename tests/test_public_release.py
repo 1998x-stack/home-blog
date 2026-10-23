@@ -31,6 +31,8 @@ class PublicReleaseTest(unittest.TestCase):
             self.assertEqual(cmd('activate',a).returncode,0)
             self.assertEqual(cmd('activate',a).returncode,0)
             self.assertEqual((root/'current/index.html').read_text(),'version A')
+            # Public Nginx must traverse root/current and nested directories, even with a restrictive umask.
+            self.assertEqual((root/'current').resolve().stat().st_mode & 0o777, 0o755)
             self.assertEqual(cmd('activate',b).returncode,0)
             self.assertEqual((root/'current/index.html').read_text(),'version B')
             self.assertEqual(cmd('rollback').returncode,0)
